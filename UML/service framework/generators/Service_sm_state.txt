@@ -1,0 +1,34 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+[*]				--> 	service_sm_run
+note top
+When **application_create** is called 
+service state machine's initial state 
+is **run**. 
+Signal like **sigterm** and **sigusr1**
+are forwarded to this FSM by connecting 
+these signal to dedicate callbacks
+(using **g_source_set_callback** from **GLib**)
+end note
+service_sm_run	-->		service_sm_stop: sigterm		
+service_sm_run	-->		service_sm_hold: sigusr1
+service_sm_hold	-->		service_sm_stop:	 sigterm
+service_sm_hold	-->		service_sm_run:	 sigusr1
+
+
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+
+
+'UserNotificationManager
+class UserNotificationManager{
+
+	-HmiUserNotifications *proxy;
+	-GHashTable *user_notifications;
+	-char *application_token;
+	-GMutex mutex;
+	
+	'Methods 
+	-int obu_id_mediator_set_obu_id(in ObuIdMediator *self, in const guchar* value)
+	+UserNotificationManager *user_notification_manager_create(void)
+	+void user_notification_manager_destroy(UserNotificationManager *self)
+	+UserNotificationManagerStatus user_notification_manager_notify(const char *user_notification_key,HmiUserNotificationDomain domain,	HmiUserNotificationCategory category, const char* additional_info,constchar **audio_feedback, const char *description)
+	+UserNotificationManagerStatus user_notification_manager_clear(const char *user_notification_key);
+	+UserNotificationManagerStatus user_notification_manager_get_notified(const char 		*user_notification_key, gboolean *notified)
+	-static UserNotificationInfo *user_notification_info_create( HmiUserNotificationDomain domain, HmiUserNotificationCategory category, char *notification_id)
+	-static void user_notification_info_destroy(UserNotificationInfo *self)
+	-static void user_notification_info_destroy_notify(gpointer data)
+	-static HmiUserNotifications *user_notification_manager_get_user_notifications_proxy(void)
+	-UserNotificationManager *user_notification_manager_create(void)
+	-void user_notification_manager_destroy(UserNotificationManager *self)
+	-static UserNotificationManager *user_notification_manager_get_instance(void)
+	-static const char *user_notification_manager_get_application_token(UserNotificationManager *self)
+	-static gboolean user_notification_manager_send_notify( UserNotificationManager *self, HmiUserNotificationDomain domain, HmiUserNotificationCategory category, const char *additional_info, const char **audio_feedback, const char *description, gchar **out_notification_id)
+	-static gboolean user_notification_manager_send_clear( UserNotificationManager *self, HmiUserNotificationDomain domain, HmiUserNotificationCategory category, const char *notification_id)
+	-static UserNotificationManagerStatus user_notification_manager_do_clear( UserNotificationManager *self, const char *user_notification_key);
+	-static UserNotificationManagerStatus user_notification_manager_do_notify( UserNotificationManager *self, const char *user_notification_key, HmiUserNotificationDomain domain, HmiUserNotificationCategory category, const char *additional_info, const char **audio_feedback, const char *description)
+	-static UserNotificationManagerStatus user_notification_manager_do_clear( UserNotificationManager *self, const char *user_notification_key)
+	-static UserNotificationManagerStatus user_notification_manager_do_get_notified(UserNotificationManager *self, const char *user_notification_key, gboolean *notified)
+	-UserNotificationManagerStatus user_notification_manager_notify( const char *user_notification_key, HmiUserNotificationDomain domain, HmiUserNotificationCategory category, const char *additional_info, const char **audio_feedback, const char *description)
+	-UserNotificationManagerStatus user_notification_manager_clear(const char *user_notification_key)
+	-UserNotificationManagerStatus user_notification_manager_get_notified(const char *user_notification_key, gboolean *notified)
+}
+
+'Relationships
+'Service_IFace <|-- Service
+'Application *-- "0..1" Service_IFace: service
+'Application *-- "0..1" LifeCycleManager: lfc_manager 
+'Application *-- "0..1" ServiceSmData: service_sm_data 
+'Application *-- "1..n" State: service_sm_states 
+'Application *-- "0..1" ObuIdMediator: app_obu_id_mediator
+'Application *-- "0..1" UserNotificationManager: user_notification_manager
+
+@enduml

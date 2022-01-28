@@ -1,0 +1,85 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+class IccHmi
+class ManagedApplications 
+class HmiEvents
+class HmiKeypadEventMediator
+class LedMediator
+class HmiAudioVolumeControl
+class ToneGenerator
+class HmiAudioPlayer
+class HmiPatternManager
+class HmiContextManager
+class HmiWidgetObuStatus
+class HmiInvalidateObserver
+class HmiVoiceCallEventMediator
+
+'Service_IFace 
+interface Service_IFace{
+	
+	+Service* service_new()
+	+void service_destroy(Service* self)
+	+void service_destroy(Service* self)
+	+int service_on_hold(Service* self)
+	+int service_resume(Service* self)
+	+int service_init(Service* self, GMainLoop * loop)
+	+int service_deinit(Service* self)
+	
+}
+
+class Service{
+
+    GMainLoop               *app_loop;
+
+    IccHmi                  *icc_service;
+    ManagedApplications     *managed_applications;
+    HmiEvents               *hmi_events;
+    HmiKeypadEventMediator  *keypad_event_mediator;
+    LedMediator             *led_mediator;
+    HmiAudioVolumeControl   *audio_volume_control;
+    ToneGenerator           *tone_generator;
+    HmiAudioPlayer          *audio_player;
+    HmiPatternManager       *patterns;
+    HmiContextManager       *context_manager;
+    HmiWidgetObuStatus      *obustatus_widget;
+    HmiInvalidateObserver   *invalidate_observer;
+
+    gboolean                 on_hold;
+
+    HmiVoiceCallEventMediator *voice_call_event_mediator;
+}
+  
+
+'Relationships 
+
+Service_IFace <-- Service
+Service *-- "0..1" IccHmi: icc_service
+Service *-- "0..1" ManagedApplications: managed_applications
+Service *-- "0..1" HmiEvents: hmi_events
+Service *-- "0..1" HmiKeypadEventMediator: keypad_event_mediator
+Service *-- "0..1" LedMediator: led_mediator
+Service *-- "0..1" HmiAudioVolumeControl: audio_volume_control
+Service *-- "0..1" ToneGenerator: tone_generator
+Service *-- "0..1" HmiAudioPlayer: audio_player
+Service *-- "0..1" HmiPatternManager: patterns
+Service *-- "0..1" HmiContextManager: context_manager
+Service *-- "0..1" HmiWidgetObuStatus: obustatus_widget
+Service *-- "0..1" HmiInvalidateObserver: invalidate_observer
+Service *-- "0..1" HmiVoiceCallEventMediator: voice_call_event_mediator
+
+@enduml 

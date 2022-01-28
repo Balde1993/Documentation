@@ -1,0 +1,30 @@
+@startuml
+
+class AnomalyManager{
+	
+	-AnomaliesManagement *proxy;
+	-GHashTable *anomalies;
+	
+	'Methods 
+	+AnomalyManager *anomaly_manager_create(void)
+	+void anomaly_manager_destroy(AnomalyManager *self);
+	+int anomaly_manager_raise_anomaly(const char *anomaly_key, const char **audio_feedback);
+	+int anomaly_manager_clear_anomaly(const char *anomaly_key);
+	
+	-static AnomaliesManagement *anomaly_manager_get_anomalies_management_proxy(void)
+	-static GVariant *anomaly_manager_get_anomalies_as_variant(AnomalyManager *self)
+	
+	-static void anomaly_manager_enumerate_anomalies_callback(AnomaliesManagement *, AnomalyManager *) 
+	-static void anomaly_manager_destroy_strv_callback(gpointer data) 
+}
+
+
+'Relationships
+AnomalyManager *-- "0..1" AnomaliesManagement: proxy 
+note left 
+GDBus interface's proxy object
+end note 
+AnomalyManager *-- "0..1" GHashTable: anomalies 
+
+
+@enduml 

@@ -1,0 +1,112 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+interface State<<service-framework>> {
+    Actions * actions;
+    Data * data;
+}
+note bottom 
+In this context Data, which is defined as **void*** is 
+assigned with the address of **Tolling_Gnss_Sm_Data** 
+objects. 
+**Tolling_Gnss_Sm_Data** has a pointer to  a 
+**ServiceActivationSm** which is basically an inner 
+state machine considering this context.
+Furthermore, the creation of 3 FSM takes as argument
+the same istance of inner state machine. 
+**ServiceActivationSm** has in turn 3 states, namely:
+	-	active
+	-	not_active
+	-	no_go
+TODO state diagram di questa statemachine 
+
+end note
+
+
+class TollingGnssSm {
+	-State                  *states[TOLLING_GNSS_STATES_NUM];
+	-TollingGnssStateId      curr_state_id;
+	
+	'Methods 
+	+TollingGnssSm *tolling_gnss_sm_new(Tolling_Gnss_Sm_Data* data);
+	+void tolling_gnss_sm_destroy(TollingGnssSm *self);
+	
+	+void tolling_gnss_sm_stop(TollingGnssSm *self);
+	+void tolling_gnss_sm_on_hold(TollingGnssSm *self);
+	+void tolling_gnss_sm_run(TollingGnssSm *self);
+	
+	+void tolling_gnss_sm_not_active(TollingGnssSm *self);
+	+void tolling_gnss_sm_no_go(TollingGnssSm *self);
+	+void tolling_gnss_sm_active(TollingGnssSm *self);
+	
+	+void tolling_gnss_sm_not_connected(TollingGnssSm *self);
+	+void tolling_gnss_sm_connected(TollingGnssSm *self);
+	
+	+void tolling_gnss_sm_anomaly(TollingGnssSm *self);
+	+void tolling_gnss_sm_no_anomaly(TollingGnssSm *self);
+	
+	+void tolling_gnss_sm_position_updated(TollingGnssSm *self, const PositionData *position);
+	
+	+void tolling_gnss_sm_send_tolling_data(TollingGnssSm *self); // TODO: serve davvero?
+	
+	
+} 
+note left 
+Here an element of pointer's array **states** represents a state of a FSM. 
+Each state (3 in total) is related to one of TOLLING_GNSS_STATES, namely: 
+	- on_hold
+	- on_running
+	- on_stop
+
+end note
+class Actions {
+	-void (*enter_state)(TollingGnssSm* tolling_gnss_sm);
+	-void (*exit_state)(TollingGnssSm* tolling_gnss_sm);
+
+	-void (*stop)(TollingGnssSm* tolling_gnss_sm);
+	-void (*on_hold)(TollingGnssSm* tolling_gnss_sm);
+	-void (*run)(TollingGnssSm* tolling_gnss_sm);
+
+	-void (*not_active)(TollingGnssSm* tolling_gnss_sm);
+	-void (*no_go)(TollingGnssSm* tolling_gnss_sm);
+	-void (*active)(TollingGnssSm* tolling_gnss_sm);
+
+	-void (*not_connected)(TollingGnssSm* tolling_gnss_sm);
+	-void (*connected)(TollingGnssSm* tolling_gnss_sm);
+
+	-void (*anomaly)(TollingGnssSm* tolling_gnss_sm);
+	-void (*no_anomaly)(TollingGnssSm* tolling_gnss_sm);
+
+	-void (*position_update)(TollingGnssSm* tolling_gnss_sm, const PositionData *position);
+	-void (*send_tolling_data)(TollingGnssSm* tolling_gnss_sm);
+	
+
+}
+note top
+This class basically defines transitions that FSM states 
+can actually be forced to do. 
+
+end note
+
+
+
+'Relationships 
+Actions	--|>	State: defining struct Actions 
+
+TollingGnssSm	*--	"0..N" State
+
+
+@enduml 

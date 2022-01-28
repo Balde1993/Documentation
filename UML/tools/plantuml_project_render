@@ -1,0 +1,82 @@
+#folders
+GENERATORS_FOLDER="/generators/"
+GENERATED_FOLDER="/generated"
+GENERATED="generated"
+CLASS_DIAGRAMS_FOLDER="/class_diagrams"
+SEQUENCE_DIAGRAMS_FOLDER="/sequence_diagrams"
+USECASE_DIAGRAMS_FOLDER="/usecase_diagrams"
+COMPONENT_DIAGRAMS_FOLDER="/component_diagrams"
+ACTIVITY_DIAGRAMS_FOLDER="/activity_diagrams"
+GDBUS_DIAGRAMS_FOLDER="/gdbus_interface_diagrams"
+
+
+
+GENERATORS=$(find $1$GENERATORS_FOLDER -mtime -1 -name "*.txt")
+
+
+#keywords
+CLASS="class"
+SEQUENCE="sequence"
+USECASE="usecase"
+ACTIVITY="activity"
+GDBUS="gdbus"
+C="component"
+
+for i in $GENERATORS
+	do
+	echo rendering of $i
+	plantuml_render $i
+done
+
+
+#folders construction 
+mkdir -p "$GENERATED"
+mkdir -p "$GENERATED$CLASS_DIAGRAMS_FOLDER"
+mkdir -p "$GENERATED$SEQUENCE_DIAGRAMS_FOLDER"
+mkdir -p "$GENERATED$USECASE_DIAGRAMS_FOLDER"
+mkdir -p "$GENERATED$GDBUS_DIAGRAMS_FOLDER"
+mkdir -p "$GENERATED$ACTIVITY_DIAGRAMS_FOLDER"
+mkdir -p "$GENERATED$COMPONENT_DIAGRAMS_FOLDER"
+
+#generated diagrams files dispatching 
+GENERATED_DIAGRAMS=$(sudo find -name "*.png")
+
+
+for diagram in $GENERATED_DIAGRAMS
+	do
+	
+	#diagrams type dispatching 
+	case $diagram in 
+		*"$CLASS"*)
+		mv "$diagram" "$GENERATED$CLASS_DIAGRAMS_FOLDER" 2>/dev/null
+	esac 
+	
+	case $diagram in 
+		*"$SEQUENCE"*)
+		mv "$diagram" "$GENERATED$SEQUENCE_DIAGRAMS_FOLDER" 2>/dev/null
+	esac
+	
+	case $diagram in 
+	*"$ACTIVITY"*)
+	mv "$diagram" "$GENERATED$ACTIVITY_DIAGRAMS_FOLDER" 2>/dev/null
+	esac  
+	
+	case $diagram in 
+	*"$USECASE"*)
+	mv "$diagram" "$GENERATED$USECASE_DIAGRAMS_FOLDER" 2>/dev/null
+	esac 
+		
+	case $diagram in 
+	*"$GDBUS"*)
+	mv "$diagram" "$GENERATED$GDBUS_DIAGRAMS_FOLDER" 2>/dev/null
+	esac 
+	
+	case $diagram in 
+	*"$COMPONENT"*)
+	mv "$diagram" "$GENERATED$COMPONENT_DIAGRAMS_FOLDER" 2>/dev/null
+	esac 
+	
+done
+
+
+

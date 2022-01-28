@@ -1,0 +1,161 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+class Tolling_Gnss_Sm_Data{
+
+
+	'Attributes 
+	+Service              *service;
+	+TollingGnssSm        *tolling_gnss_sm;
+	+ServiceActivationSm  *service_activation_sm;
+	+GnssFixBuffer        *gnss_fix_buffer;
+	+MessageComposer      *message_composer;
+	+ConnectionSm         *connection_sm;
+	+Odometer             *odometer;
+	+ConfigurationStore   *configuration_store;
+	+Mqtt_Client          *mqtt_client;
+	+TripIdGenerator      *trip_id_generator;
+	+guint                 current_axles;
+	+guint                 current_weight;
+	+guint                 progressive_trip_id;
+	+gboolean              tampered;
+	
+	
+	'Methods 
+
+}
+
+class  TollingGnssSm	{
+
+	State                  *states[TOLLING_GNSS_STATES_NUM];
+	TollingGnssStateId      curr_state_id;
+	
+	
+	'Methods 
+	TollingGnssSm *tolling_gnss_sm_new(Tolling_Gnss_Sm_Data* data);
+	void tolling_gnss_sm_destroy(TollingGnssSm *self);
+	void tolling_gnss_sm_stop(TollingGnssSm *self);
+	void tolling_gnss_sm_on_hold(TollingGnssSm *self);
+	void tolling_gnss_sm_run(TollingGnssSm *self);
+	void tolling_gnss_sm_not_active(TollingGnssSm *self);
+	void tolling_gnss_sm_no_go(TollingGnssSm *self);
+	void tolling_gnss_sm_active(TollingGnssSm *self);
+	void tolling_gnss_sm_not_connected(TollingGnssSm *self);
+	void tolling_gnss_sm_connected(TollingGnssSm *self);
+	void tolling_gnss_sm_anomaly(TollingGnssSm *self);
+	void tolling_gnss_sm_no_anomaly(TollingGnssSm *self);
+	void tolling_gnss_sm_position_updated(TollingGnssSm *self, const PositionData *position);
+	void tolling_gnss_sm_send_tolling_data(TollingGnssSm *self); 
+	}
+
+class ServiceActivationSm{
+	
+	State	*states[SERVICE_ACTIVATION_STATES_NUM];
+	ServiceActivationStateId  curr_state_id;
+	
+	
+	'Methods 
+	ServiceActivationSm *service_activation_sm_new(Tolling_Gnss_Sm_Data* data);
+	void service_activation_sm_destroy(ServiceActivationSm *self);
+	void service_activation_sm_not_active(ServiceActivationSm *self);
+	void service_activation_sm_no_go(ServiceActivationSm *self);
+	void service_activation_sm_active(ServiceActivationSm *self);
+	void service_activation_sm_not_connected(ServiceActivationSm *self);
+	void service_activation_sm_connected(ServiceActivationSm *self);
+	void service_activation_sm_anomaly(ServiceActivationSm *self);
+	void service_activation_sm_no_anomaly(ServiceActivationSm *self);
+	void service_activation_sm_position_updated(ServiceActivationSm *self, const PositionData *position);
+	void service_activation_sm_send_tolling_data(ServiceActivationSm *self);
+	
+}
+
+
+class  GnssFixBuffer{
+
+	Tolling_Gnss_Sm_Data  *tolling_gnss_sm_data;
+	GnssCircularBuffer    *circular_buffer;
+	GnssFixData           *most_recent_fix;
+	guint                  fix_promotion_timer;
+	guint64                timestamp_of_last_added_fix;
+	guint                  transmission_timer;
+	
+	'Methods 
+	void gnss_fix_buffer_destroy(GnssFixBuffer *self);
+	void gnss_fix_buffer_set_capacity(GnssFixBuffer *self, const guint capacity);
+	void gnss_fix_buffer_debug(GnssFixBuffer *self);
+	void gnss_fix_buffer_position_received(GnssFixBuffer *self, const PositionData *position);
+	void gnss_fix_buffer_send_fixes(GnssFixBuffer *self);
+	void gnss_fix_buffer_discard_n_oldest_fixes(GnssFixBuffer *self, const guint number_of_fixes_to_discard);
+	void gnss_fix_buffer_discard_all_fixes(GnssFixBuffer *self);
+	void gnss_fix_buffer_start_transmission_timer(GnssFixBuffer *self);
+	void gnss_fix_buffer_stop_transmission_timer(GnssFixBuffer *self);
+}
+
+class MessageComposer {
+	Tolling_Gnss_Sm_Data  *tolling_gnss_sm_data;
+	
+	'Methods 
+	MessageComposer* MessageComposer_new(Tolling_Gnss_Sm_Data* data);
+	void MessageComposer_destroy(MessageComposer *self);
+	void MessageComposer_send_message(MessageComposer *self, const GArray* fixes_to_send);
+	
+} 
+
+class ConnectionSm{
+
+	-State *states[CONNECTION_STATES_NUM]
+	-ConnectionStateId   curr_state_id
+	
+	'Methods 
+	+ConnectionSm *connection_sm_new(Tolling_Gnss_Sm_Data* data)
+	+void connection_sm_destroy(ConnectionSm *self)
+	+void connection_sm_not_connected(ConnectionSm *self)
+	+void connection_sm_connected(ConnectionSm *self)
+	+void connection_sm_send_tolling_data(ConnectionSm *self)
+
+}
+
+class Odometer{
+
+	'Attributes 
+	-gdouble       total_distance //KM
+	-PositionData *last_position
+
+	'Methods 
+	+void odometer_destroy(Odometer *self)
+	+void odometer_reset(Odometer *self)
+	+void odometer_position_received(Odometer *self, const PositionData *position)
+	+gdouble odometer_get_trip_distance(Odometer *self)
+
+}
+
+
+
+
+'Relationships 
+Tolling_Gnss_Sm_Data *- "0..1" Service: service 
+Tolling_Gnss_Sm_Data *-down- "0..1" TollingGnssSm: tolling_gnss_sm 
+Tolling_Gnss_Sm_Data *-up- "0..1" ServiceActivationSm: service_activation_sm 
+Tolling_Gnss_Sm_Data *-- "0..1" GnssFixBuffer: gnss_fix_buffer 
+
+Tolling_Gnss_Sm_Data *-up- "0..1" MessageComposer: message_composer 
+Tolling_Gnss_Sm_Data *-up- "0..1" ConnectionSm: connection_sm 
+Tolling_Gnss_Sm_Data *-- "0..1" Odometer: odometer 
+Tolling_Gnss_Sm_Data *-- "0..1" ConfigurationStore: configuration_store 
+Tolling_Gnss_Sm_Data *- "0..1" Mqtt_Client: mqtt_client 
+Tolling_Gnss_Sm_Data *-left- "0..1" TripIdGenerator: trip_id_generator 
+
+@enduml 

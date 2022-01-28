@@ -1,0 +1,69 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+interface	Service 
+class		LifecycleManager 		
+class		PoliciesDbManager 		
+class		PowerStatusChangesManager 	
+class		SwUpdatesManager 		
+class		SyncAppStopper 		
+class		ObuManagementManager 		
+class		ObuBrandingManager 		
+class		ObuRebootManager 		
+class		ManagedApplicationsInformation	
+class		K1osManager 			
+class		K1osMonitor 			
+class		FaultManager 			
+
+class 		appmanager<<Service>>{
+
+	LifecycleManager *lfc_manager
+	PoliciesDbManager *db_manager
+	PowerStatusChangesManager *power_status_changes_manager
+	SwUpdatesManager *sw_updates_manager
+	SyncAppStopper *sync_app_stopper
+	ObuManagementManager *obu_management_mgr
+	ObuBrandingManager *obu_branding_manager
+	ObuRebootManager *obu_reboot_mgr
+	ManagedApplicationsInformation *managed_applications_information
+	K1osManager *k1os_manager
+	K1osMonitor *k1os_monitor
+	FaultManager *fault_manager
+
+
+}
+
+
+
+
+'Relationships 
+Service	<|--	appmanager
+appmanager  *-- LifecycleManager
+appmanager  *-- PoliciesDbManager
+appmanager  *-- SwUpdatesManager
+appmanager  *-- PowerStatusChangesManager
+appmanager  *-- SyncAppStopper
+appmanager  *-- ObuManagementManager
+appmanager  *-- ObuBrandingManager
+appmanager  *-- ObuRebootManager
+appmanager  *-- ManagedApplicationsInformation
+appmanager  *-- K1osManager
+appmanager  *-- K1osMonitor
+appmanager  *-- FaultManager
+
+
+@enduml 

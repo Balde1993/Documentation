@@ -1,0 +1,75 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+start 
+
+:flush_buffers;
+
+floating note left
+This routine will be executed by a pthread within an infinite loop 
+end note
+
+floating note left
+**TODO:** explore details of others handle_xxx 
+end note
+
+repeat:
+	:bytes_read += read_byte(serial,read_byte);
+repeat while(read_byte == STX) is (no)
+->yes; 
+
+repeat:
+	:bytes_read += read_byte(serial,read_byte);
+repeat while( bytes_read < HEADER_LEN) is (no)
+->yes; 
+
+:payload_len = calc_msg_payload_len();
+
+
+repeat:
+	:bytes_read += read_byte(serial,read_byte);
+repeat while( bytes_read < payload_len) is (no)
+->yes; 
+
+:check_message_validity();
+
+:parseMessage();
+
+if(msg source is ADDR_NRF52) then(yes)
+	:handle_NRF52();
+elseif(msg source is ADDR_LED) then (yes)
+	:handle_LED();
+elseif(msg source is ADDR_BUTTON) then (yes)
+	if(event is btn_pressed)
+		:call_buttonPressed();
+	else
+		:call_buttonReleased();
+		note left
+		These will launch **icc-service's** registered callbacks
+		These callbacks emit **IccHmi** DBUS interface event-related signals 
+		Finally, these signals will be handled by **HmiKeypadEventMediator** 
+		end note
+
+	endif
+elseif(msg source is ADDR_PWRM) then (yes)
+	:handle_PWRM();
+elseif(msg source is ADDR_BUTTON) then (yes)
+	:handle_boo();
+endif	
+
+stop
+
+@enduml

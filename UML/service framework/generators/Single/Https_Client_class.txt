@@ -1,0 +1,39 @@
+@startuml 
+
+
+class HttpsClient{
+
+	+HttpsClientPriv *priv;
+
+    +void (*ctor)(HttpsClient  *self)
+    +void (*dtor)(HttpsClient  *self)
+    
+    +CURLcode (*get)(HttpsClient*,const char*, struct curl_slist *,glong, https_client_write_callback_t, gpointer, glong *)
+    +CURLcode (*post)(HttpsClient *,const char*, struct curl_slist*, glong, struct curl_httppost*,glong ,https_client_read_callback_t, gpointer, https_client_write_callback_t , gpointer , glong*)                  
+    
+    'Methods 
+    +HttpsClient *HttpsClient_new()
+}
+note left: Function pointers will be assigned by HttpsClient_new function
+
+
+
+class HttpsClientPriv{
+
+    -gchar        **hosts_allowed
+    -gint           hosts_allowed_count
+    -gchar        **hosts_users
+    -gchar        **hosts_pwds
+    -gboolean       https_verbose
+
+    CURLcode (*check_url)(HttpsClient  *self, const char   *url)
+    void (*set_common_options)(HttpsClient  *self, CURL **curl_ref)
+    void (*set_credentials)(HttpsClient  *self, const char *url, CURL **curl_ref)
+
+}
+
+
+'Relationships 
+HttpsClient *-- "0..1" HttpsClientPriv: priv
+
+@enduml 

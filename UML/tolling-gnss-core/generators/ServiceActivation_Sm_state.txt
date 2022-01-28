@@ -1,0 +1,36 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+[*]				--> 	service_activation_not_active
+
+service_activation_not_active	--> service_activation_tolling_active: tolling_active\ service_activation_enter_state_active()
+note right 
+	odometer_reset(curr_state_data->odometer);
+	get_initial_connection_status(curr_state_data->service);
+	gnss_fix_buffer_start_transmission_timer(curr_state_data->gnss_fix_buffer);
+	curr_state_data->progressive_trip_id = trip_id_generator_get_new_trip_id(curr_state_data->trip_id_generator);
+end note 
+service_activation_not_active	--> service_activation_no_go: tolling_no_go
+
+service_activation_tolling_active	--> service_activation_no_go: tolling_no_go
+service_activation_tolling_active	--> service_activation_not_active: tolling_not_active
+
+service_activation_no_go	--> service_activation_no_go: tolling_active
+service_activation_no_go	--> service_activation_not_active: tolling_not_active
+
+
+@enduml

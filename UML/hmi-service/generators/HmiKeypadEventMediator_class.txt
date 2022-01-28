@@ -1,0 +1,118 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+
+class HmiKeypadEventMediator{
+
+	+HmiKeypadEventMediatorPriv *priv 
+	+void (*ctor)(HmiKeypadEventMediator *self, HmiEvents *hmi_events,IccHmi *icc_service ) 
+	+void (*dtor)( HmiKeypadEventMediator   *self) 
+	+void (*on_pause)(HmiKeypadEventMediator  *self) 
+	+void (*on_resume) (HmiKeypadEventMediator  *self) 
+  
+	'Private methods 
+    	-static void          HmiKeypadEventMediator_ctor(HmiKeypadEventMediator *,HmiEvents *, IccHmi *) 
+	-static void          HmiKeypadEventMediator_dtor(HmiKeypadEventMediator *) 
+	-static void          HmiKeypadEventMediator_on_pause(HmiKeypadEventMediator *) 
+	-static void          HmiKeypadEventMediator_on_resume(HmiKeypadEventMediator *) 
+	-static void          HmiKeypadEventMediator_setup_icc_btn_event_handler(HmiKeypadEventMediator *) 
+	-static void          HmiKeypadEventMediator_handle_icc_btn_event(GDBusConnection *, const gchar *, const gchar *, const gchar *, const gchar *, GVariant *, gpointer) 
+	-static StateMachine *HmiKeypadEventMediator_build_state_machine(HmiKeypadEventMediator *, guint) 
+	-static void          sm_btn_pressed_do(StateMachine *) 
+	-static void          sm_btn_released_do(StateMachine *) 
+	-static void          sm_long_btn_pressed_do(StateMachine *) 
+	-static void          sm_long_btn_released_do(StateMachine *) 
+	-static void          sm_short_btn_pressed_do(StateMachine *) 
+	-static void          sm_next_btn_pressed_do(StateMachine *) 
+	-static void          sm_double_pressed_do(StateMachine *) 
+	-static gboolean      sm_press_release_lt_th_guard(StateMachine *) 
+	-static gboolean      sm_press_release_gt_th_guard(StateMachine *) 
+	-static void          sm_short_press_btn_release_effect_cb(StateMachine *) 
+	-static gboolean      sm_pulse_timer(gpointer) 
+	-static gboolean      sm_dbl_press_expired_timer(gpointer) 
+
+}
+
+
+class HmiKeypadEventMediatorPriv{
+
+    -HmiEvents     *hmi_events 
+    -IccHmi        *icc_service 
+    -gboolean      application_paused 
+    -guint          long_press_th 
+    -guint          dbl_press_th 
+    -StateMachine  *sm[MAX_BUTTONS] 
+    -StateMachine *(*build_state_machine)( HmiKeypadEventMediator *self,guint btn_id ) 
+    -void (*setup_icc_btn_event_handler)(HmiKeypadEventMediator *self) 
+
+    -void (*handle_icc_btn_event)( GDBusConnection *, const gchar *, const gchar *, const gchar *, const gchar *, GVariant *,gpointer /* self */
+    ) 
+
+}
+
+class  StateMachine{
+
+}
+
+note left
+**sm** is basically an array of state machines related to keypad buttons
+Specification of this machine type can be found in  **hmi_keypad_event_mediator_sm.png** (legacy docs folder)
+end note
+class HmiEvents{
+    +HmiEventsPriv *priv 
+
+    +void (*emit_button_pressed)(..) 
+    +HmiEvent_listener_t (..) 
+    +void (..) 
+    +HmiEvent_listener_t (..) 
+    +void (*emit_button_shortpress)(..) 
+    +HmiEvent_listener_t (*listen_button_shortpress)(..) 
+    +void (*emit_button_longpress)(.) 
+    +HmiEvent_listener_t (*listen_button_longpress)(..) 
+    +void (*emit_button_doublepress)(..) 
+    +HmiEvent_listener_t (*listen_button_doublepress)(..) 
+    +void (*emit_voice_call_incoming)(..) 
+    +HmiEvent_listener_t (..) 
+    +void (*emit_voice_call_activation)(..) 
+    +HmiEvent_listener_t (*listen_voice_call_activation)(..) 
+    +void (*emit_voice_call_termination)(..) 
+    +HmiEvent_listener_t (*listen_voice_call_termination)(..) 
+    +void (*pause)(..) 
+    +void (*resume)(..) 
+    +void (*remove)(..) 
+    +void (*ctor)(..) 
+    +void (*dtor)(..) 
+
+
+}
+
+
+class HmiEventsPriv{
+	
+	-GObject *gobject
+}
+
+'Relationships 
+HmiKeypadEventMediator *-- "0..1" HmiKeypadEventMediatorPriv: priv
+HmiKeypadEventMediatorPriv *-- "0..1" HmiEvents: hmi_events
+HmiKeypadEventMediatorPriv *-- "0..1" IccHmi: icc_service
+HmiKeypadEventMediatorPriv *-- "0..4" StateMachine: sm
+HmiEvents *-- "0..1" HmiEventsPriv: priv
+
+'TODO: sequence, from keypressing to handlers 
+
+@enduml 

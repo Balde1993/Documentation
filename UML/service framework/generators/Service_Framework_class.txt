@@ -1,0 +1,200 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+'Service
+class Service
+note right: In a given package "Service" will be\n the main implementation of\n the related service.\nFor istance, in application_manager\nproject this entity will be logically\n replaced by the **appmanager.c**\n module. 
+
+'Service_IFace 
+interface Service_IFace{
+	+Service* service_new()
+	+void service_destroy(Service* self)
+	+void service_destroy(Service* self)
+	+int service_on_hold(Service* self)
+	+int service_resume(Service* self)
+	+int service_init(Service* self, GMainLoop * loop)
+	+int service_deinit(Service* self)
+	
+}
+
+'class Application
+class Application{
+	-GMainLoop*					app_loop
+    -Service*					service
+	-State**					service_sm_states
+    -ServiceSmData*				service_sm_data
+    -ObuIdMediator* 			app_obu_id_mediator
+	-AnomalyManager*			anomaly_manager
+	-UserNotificationManager*	user_notification_manager
+	-LifeCycleManager * 		lfc_manager
+	-int 						status
+	-GSource*					sigterm_source
+	-GSource*					sigint_source
+	-GSource*					sigusr1_source
+    
+    'Methods 
+	-void application_deinit(Application *app)
+	-int application_init(Application* _self)
+	-int application_run(Application* _self)
+	-static gboolean sigterm_handler(Application *application)
+	-static gboolean sigusr1_handler(Application *application)
+	-Application *application_create()
+	-int main(int argc, const char *argv[])
+
+
+}
+
+'LifeCycleManager
+class LifeCycleManager{
+
+	-Lifecycle* proxy
+	-guint 		heartbeat_source
+	
+	+LifeCycleManager* lifecycle_manager_new(void)
+	+void lifecycle_manager_destroy (LifeCycleManager* self)
+	+int lifecycle_manager_register (LifeCycleManager* _self)
+	+int lifecycle_manager_unregister (LifeCycleManager* _self)
+	+gboolean lifecycle_manager_heartbeat (gpointer data)
+	+int lifecycle_manager_paused(LifeCycleManager* _self)
+	+int lifecycle_manager_resumed(LifeCycleManager* _self)
+	
+
+
+}
+note bottom: Client Module of lifecycle GDBus interface
+
+'ServiceSmData
+class ServiceSmData {
+
+	'Attributes
+	+ServiceStateId 	curr_state_id
+	+Application* 		app //opaque type: don't use directly
+	+void 				(*app_deinit)(Application *app) //app deinit method pointer
+	+Service* 			app_service //opaque type: don't use directly
+	+LifeCycleManager*	app_lfc_manager  //opaque type: don't use directly
+
+	'Methods
+	+State* service_sm_run_new(ServiceSmData* data)
+	+State* service_sm_on_hold_new(ServiceSmData* data)
+	+State* service_sm_stop_new(ServiceSmData* data)
+	-void service_sm_not_implemented(State *state)
+	-void service_sm_run_on_sigterm_signal(State* state)
+	-void service_sm_run_on_sigusr1_signal(State* state)
+	-void service_sm_on_hold_on_sigterm_signal(State* state)
+	-void service_sm_on_hold_on_sigusr1_signal(State* state)
+
+}
+
+'State
+class State{
+    +Actions*	actions
+    +Data* 		data
+}
+note bottom 
+Here **Data** is defined as **void***
+**Actions** type has to be defined within 
+**service implementation**  
+
+end note
+
+class ObuIdMediator{
+
+	'Attributes 
+	-ObuIdManagement* obu_manager_proxy 
+	-guint            watcher_id 
+	
+	'Methods 
+	+ObuIdMediator *obu_id_mediator_new(void) 
+	+void obu_id_mediator_destroy(ObuIdMediator *self) 
+	+void obu_id_mediator_start_watching_dbus_name_status(ObuIdMediator *self) 
+	+void obu_id_mediator_stop_watching_dbus_name_status(ObuIdMediator *self) 
+	+int obu_id_mediator_get_obu_id(ObuIdMediator *self, GString** out_val) 
+
+
+}
+
+class ObuIdManagement{
+}
+
+note bottom: GDBus interface's proxy object
+
+
+'UserNotificationManager
+
+class UserNotificationManager{
+
+	-HmiUserNotifications*	proxy;
+	-GHashTable*			user_notifications;
+	-char*					application_token;
+	-GMutex 				mutex;
+	
+	'Methods 
+	-int obu_id_mediator_set_obu_id(in ObuIdMediator *, in const guchar*)
+	+UserNotificationManager *user_notification_manager_create(void)
+	+void user_notification_manager_destroy(UserNotificationManager *self)
+	...
+	...
+}
+
+class HmiUserNotifications{}
+
+class AnomalyManager{
+	
+	-AnomaliesManagement*	proxy;
+	-GHashTable*			anomalies;
+	
+	'Methods 
+	+AnomalyManager *anomaly_manager_create(void)
+	+void anomaly_manager_destroy(AnomalyManager *self);
+	+int anomaly_manager_raise_anomaly(const char *anomaly_key, const char **audio_feedback);
+	+int anomaly_manager_clear_anomaly(const char *anomaly_key);
+	
+	-static AnomaliesManagement *anomaly_manager_get_anomalies_management_proxy(void)
+	-static GVariant *anomaly_manager_get_anomalies_as_variant(AnomalyManager *self)
+	
+	-static void anomaly_manager_enumerate_anomalies_callback(AnomaliesManagement *, AnomalyManager *) 
+	-static void anomaly_manager_destroy_strv_callback(gpointer data) 
+}
+
+
+'Relationships
+Service_IFace 		<|-- Service
+Application 		*-up- "0..1" Service: service
+Application 		*-- "0..1" LifeCycleManager: lfc_manager 
+Application 		*- "0..1" ServiceSmData: service_sm_data 
+Application 		*-- "1..n" State: service_sm_states 
+Application 		*-up- "0..1" ObuIdMediator: app_obu_id_mediator
+Application 		*-up- "0..1" UserNotificationManager: user_notification_manager
+Application 		*-left- "0..1" AnomalyManager: anomaly_manager
+ServiceSmData 		*-up- "0..1" Service: app_service
+ServiceSmData 		*-- "0..1" LifeCycleManager: app_service
+ServiceSmData 		*-- "0..1" Application: app
+LifeCycleManager	*-- "0..1" Lifecycle: app_lfc_manager
+note left 
+GDBus interface's proxy object
+end note
+ObuIdMediator *-up- "0..1" ObuIdManagement: obu_manager_proxy
+UserNotificationManager	*-up- "0..1" HmiUserNotifications: proxy
+note left 
+GDBus interface's proxy object
+end note
+AnomalyManager *-- "0..1" AnomaliesManagement: proxy 
+note bottom 
+GDBus interface's proxy object
+end note 
+AnomalyManager *-- "0..1" GHashTable: anomalies 
+
+
+@enduml

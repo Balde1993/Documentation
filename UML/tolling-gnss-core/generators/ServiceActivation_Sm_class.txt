@@ -1,0 +1,85 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+interface State<<service-framework>> {
+    Actions * actions
+    Data * data
+}
+
+
+
+class ServiceActivationSm {
+	State                    *states[SERVICE_ACTIVATION_STATES_NUM]
+	ServiceActivationStateId  curr_state_id
+	
+	+void service_activation_sm_destroy(ServiceActivationSm *self)
+
+	+void service_activation_sm_not_active(ServiceActivationSm *self)
+	+void service_activation_sm_no_go(ServiceActivationSm *self)
+	+void service_activation_sm_active(ServiceActivationSm *self)
+	
+	+void service_activation_sm_not_connected(ServiceActivationSm *self)
+	+void service_activation_sm_connected(ServiceActivationSm *self)
+	
+	+void service_activation_sm_anomaly(ServiceActivationSm *self)
+	+void service_activation_sm_no_anomaly(ServiceActivationSm *self)
+	
+	+void service_activation_sm_position_updated(ServiceActivationSm *self, const PositionData *position)
+	+void service_activation_sm_send_tolling_data(ServiceActivationSm *self)
+	
+} 
+note left 
+Here an element of pointer's array **states** represents a state of a FSM. 
+Each state (3 in total) is related to one of TOLLING_GNSS_STATES, namely: 
+	- on_hold
+	- on_running
+	- on_stop
+
+end note
+class Actions {
+	-void (*enter_state)(ServiceActivationSm* service_activation_sm)
+	-void (*exit_state)(ServiceActivationSm* service_activation_sm)
+
+	-void (*tolling_active)(ServiceActivationSm* service_activation_sm)
+	-void (*tolling_no_go)(ServiceActivationSm* service_activation_sm)
+	-void (*tolling_not_active)(ServiceActivationSm* service_activation_sm)
+
+	-void (*not_connected)(ServiceActivationSm* service_activation_sm)
+	-void (*connected)(ServiceActivationSm* service_activation_sm)
+
+	-void (*anomaly)(ServiceActivationSm* service_activation_sm)
+	-void (*no_anomaly)(ServiceActivationSm* service_activation_sm)
+
+	-void (*position_update)(ServiceActivationSm* service_activation_sm, const PositionData *position)
+	-void (*send_tolling_data)(ServiceActivationSm* service_activation_sm)
+	
+
+}
+note top
+This class basically defines transitions that FSM states 
+can actually be forced to do. 
+
+end note
+
+
+
+'Relationships 
+Actions	--|>	State: defining struct Actions 
+
+ServiceActivationSm	*--	"0..N" State
+
+
+@enduml 

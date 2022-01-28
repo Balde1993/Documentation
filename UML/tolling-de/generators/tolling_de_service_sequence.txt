@@ -1,0 +1,49 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+participant	tollingDEService 
+participant	EventsManager 
+participant 	DbusManager
+participant 	GLib
+
+
+'Sequence 
+tollingDEService 	-->	EventsManager: events_manager_listen_obu_id_available()
+EventsManager 		-->	tollingDEService
+tollingDEService	-->	DbusManager: DbusManager_de_connect_to_signals()
+DbusManager		--> 	GLib: g_signal_connect
+note right 
+
+By calling **DbusManager_de_connect_to_signals()** DBusManager(de) perform its
+subscription to Gdbus interface's signals related to DBusMananger proxies. 
+Considering **Position** interface the subscription to update_position 
+links such signal to callbacks define in tolling-gnss-core (da espandare questo flow)
+
+Subscription to **Tolling** is performed in order to receive service configuration
+updates from **TollingManager**.
+Subscription to **Position** is performed in order to track vehicle's position over 
+time which is fundamental to realize gnss tolling. 
+
+Subscription to **icc_sensors** is performed in order to receive tampering alert infos. 
+
+
+end note
+
+
+
+
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+note as N1
+This diagram is not to be interpred as a classic UML diagram.
+Its purpose is only to represent and model the GDBus interface
+implementation and interaction within modules.
+end note 
+
+
+class NextApplication<<GDBus Client>>{
+	-next_application_get_new_fix()
+
+}
+
+class TOllingDSRC<<GDBus Client>>{
+
+	-periodic_get_position()
+
+}
+
+
+interface position<<GDBus interface>>{
+	+position_call_get_last_position_(Position *proxy, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data);
+	+void position_call_get_buffered_positions ( Position *proxy, GCancellable *cancellable,GAsyncReadyCallback callback gpointer user_data);
+	+void position_call_get_last_n_buffered_positions (Position *proxy, gint arg_last_n, GCancellable *cancellable, GAsyncReadyCallback callback,gpointer user_data);
+
+
+}
+
+class positioning_service<<GDBus Server>>{
+
+	-handle_get_last_position()
+	-handle_get_buffered_positions()
+	-on_handle_get_last_n_buffered_positions()
+
+}
+
+'Relationships
+
+position 		--> positioning_service
+NextApplication	--> position 
+TOllingDSRC		--> position 	
+@enduml

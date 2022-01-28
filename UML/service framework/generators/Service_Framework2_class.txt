@@ -1,0 +1,190 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+class JsonMapper {
+    -json_object* obj
+    
+    'Methods
+    +JsonMapper * json_mapper_create(const guchar *);
+	+JsonMapper * json_mapper_create_copy(const JsonMapper *);
+	+JsonMapper * json_mapper_create_wrap(json_object *);
+	+void json_mapper_destroy(JsonMapper *);
+	+const char *json_mapper_to_string_pretty(JsonMapper *);
+	+gint json_mapper_get_property_as_object(const JsonMapper *, const guchar* , json_object **);
+	+gint json_mapper_get_property_as_string(const JsonMapper *, const guchar* , const char** );
+	+gint json_mapper_get_property_as_string_forced(const JsonMapper *, const guchar* , const char** );
+	+gint json_mapper_get_property_as_double(const JsonMapper *, const guchar* , double *);
+	+gint json_mapper_get_property_as_int(const JsonMapper *, const guchar* , int *);
+	+gint json_mapper_get_property_as_int64(const JsonMapper *, const guchar* , gint64 *);
+	+gint json_mapper_get_property_as_bool(const JsonMapper *, const guchar* , int *);
+	+gint json_mapper_get_property_as_array(const JsonMapper *, const guchar* , json_object **);
+	+gint json_mapper_is_property_null(const JsonMapper *, const guchar* , int *);
+	+gint json_mapper_get_array_element_from_int_key(const JsonMapper *, const guchar* , const gint , json_object **);
+	+gint json_mapper_add_property(const JsonMapper *self, const guchar* , const json_type , const gpointer );
+	+gint json_mapper_add_property_from_mapper(const JsonMapper *, const guchar* , const JsonMapper * );
+	+gint json_mapper_add_property_double(const JsonMapper *, const guchar* , gdouble , guint );
+	+gint json_mapper_add_property_int64(const JsonMapper *, const guchar* , const gint64 );
+	+gint json_mapper_add_object_to_array(const JsonMapper *, struct json_object * );
+	+gint json_mapper_add_mapper_to_array(const JsonMapper *, const JsonMapper * );
+	+gint json_mapper_del_property(const JsonMapper *, const guchar* );
+	
+
+} 
+
+
+
+class ObuIdManagement{}
+
+
+class ObuIdMediator {
+	ObuIdManagement* obu_manager_proxy;
+	guint            watcher_id;
+	
+	'Methods
+	+typedef void obu_id_mediator_data_available_callback_t(gpointer user_data);
+	+ObuIdMediator *obu_id_mediator_new(void);
+	+void obu_id_mediator_destroy(ObuIdMediator *self);
+	+void obu_id_mediator_start_watching_dbus_name_status(ObuIdMediator *self);
+	+void obu_id_mediator_stop_watching_dbus_name_status(ObuIdMediator *self);
+	+int obu_id_mediator_get_obu_id(ObuIdMediator *self, GString** out_val);
+
+	
+	-int obu_id_mediator_set_obu_id(ObuIdMediator *self, const guchar* value)
+	-int obu_id_mediator_get_from_proxy_and_store(ObuIdMediator *self)
+	-static void on_name_appeared_cbk(GDBusConnection *connection,
+                                 	const gchar     *name,
+                                 	const gchar     *name_owner,
+                                 	gpointer         user_data)
+	
+	-static void on_name_vanished_cbk(GDBusConnection *connection,
+                                 	const gchar     *name,
+                                 	gpointer         user_data)
+	
+
+
+
+} 
+
+class Mqtt_Client<<Singleton>>{
+
+	'Attributes 
+	-gboolean singleton_exists
+    -gboolean already_initialised
+    -struct mosquitto *mosq
+    -void* service 
+    -char* host 
+    -int port 
+    -gboolean library_currently_connected
+    -gboolean client_to_stay_connected 
+    -gboolean pending_connection_request 
+    -gboolean pending_disconnection_request 
+    -GHashTable *topic_data_map 
+    -mqtt_client_publish_started_callback_t publish_started_callback 
+    -mqtt_client_publish_ended_callback_t publish_ended_callback 
+    -gint64 mqtt_pingreq_time 
+    -GThread *loop_thread 
+    -gboolean stop_loop_thread 
+
+
+	'Methods 
+	+Mqtt_Client *mqtt_client_new() 
+	+void mqtt_client_destroy(Mqtt_Client *)
+	+void mqtt_client_deinit(Mqtt_Client *)
+	+int mqtt_client_start(Mqtt_Client *)
+	+int mqtt_client_stop(Mqtt_Client *)
+	+void mqtt_client_subscribe_topic(..)
+	+void mqtt_client_subscribe_topic_from_param(..)
+	+void mqtt_client_unsubscribe_topic(..)
+	+void mqtt_client_unsubscribe_topic_from_param(..)
+	+guint mqtt_client_publish_message_on_topic_from_param(..)
+	+guint mqtt_client_publish_message_on_topic_from_param_with_len(..)
+	+guint mqtt_client_publish_message_on_topic_string(..)
+	+guint mqtt_client_publish_message_on_topic_string_with_len(..)
+	+void mqtt_client_get_payload(..)
+	+void mqtt_client_get_payload_and_timestamp(..)
+	+void mqtt_client_register_publish_started_callback(..)
+	+void mqtt_client_register_publish_ended_callback(..)
+
+}
+
+
+class HttpsClient{
+
+	+HttpsClientPriv *priv;
+
+    +void (*ctor)(HttpsClient  *self)
+    +void (*dtor)(HttpsClient  *self)
+    
+    +CURLcode (*get)(HttpsClient*,const char*, struct  *,glong, 
+    				https_client_write_callback_t, gpointer, glong *)
+    +CURLcode (*post)(HttpsClient *,const char*, struct curl_slist*, 
+    				glong, struct curl_httppost*,glong ,
+    				https_client_read_callback_t, gpointer, 
+    				https_client_write_callback_t , gpointer , glong*)                  
+    
+    'Methods 
+    +HttpsClient *HttpsClient_new()
+}
+note top: Function pointers will be assigned by **HttpsClient_new**
+
+
+
+class HttpsClientPriv{
+
+    -gchar        **hosts_allowed
+    -gint           hosts_allowed_count
+    -gchar        **hosts_users
+    -gchar        **hosts_pwds
+    -gboolean       https_verbose
+
+    CURLcode (*check_url)(HttpsClient  *self, const char   *url)
+    void (*set_common_options)(HttpsClient  *self, CURL **curl_ref)
+    void (*set_credentials)(HttpsClient  *self, const char *url, CURL **curl_ref)
+
+}
+
+entity configuration{}
+entity resource_acces_mediator{} 
+entity logger{}
+
+class EventsManager<<Singleton>>{
+
+	GObject *gobject
+	
+	'Methods 
+	+void events_manager_emit_register(guint operation_result)
+	+EventsManager_listener_t events_manager_listen_register( EventsManager_register_cb_t , gpointer )
+	+EventsManager_listener_t events_manager_listen_obu_id_available(EventsManager_obu_id_available_cb_t , gpointer )
+	+void events_manager_destroy(void)
+	+void events_manager_listener_pause(EventsManager_listener_t listener_id)
+	+void events_manager_listener_resume(EventsManager_listener_t listener_id)
+	+void events_manager_listener_remove(EventsManager_listener_t listener_id)
+	-EventsManager *events_manager_new(void)
+	-EventsManager* service_events_manager_instance(void)
+
+}
+
+note top
+This **singleton** module encapsulates a unique istance (**gobject**)
+On such instance will be emitted signals wich will be handled by others  
+end note 
+
+
+'Relationships 
+HttpsClient 	*-- "0..1" HttpsClientPriv: priv
+ObuIdMediator	*-right-"0..1" ObuIdManagement: obu_manager_proxy
+
+@enduml 

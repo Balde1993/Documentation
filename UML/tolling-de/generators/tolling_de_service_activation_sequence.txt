@@ -1,0 +1,77 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+participant TollingManager
+collections GLib
+collections position
+participant PositioningService
+participant Geofence
+participant Tolling
+participant	tollingDEService 
+participant TollingGnssSm		
+participant ServiceActivationSm	
+
+
+
+PositioningService	--> position: emit_position_update_signal()
+
+position 			--> GLib: transparent
+GLib 				--> TollingManager: position_update_callback()
+TollingManager 		--> Geofence: Geofence_verify(geofence, latitude, longitude);
+note left 
+Here we can see how a country-spefic service
+is being activated. 
+**TollingDE** service is related to gnss tolling. 
+At run time, **PositioningService** periodically 
+emits  **position_update** signal. 
+Every time this signal is triggered a given 
+callback of **TollingManager** is called. 
+This callaback  exploits **GeoFence** module's 
+functions to understand if and on which 
+domain the vehicle is entered. 
+If a **domain enter** condition is detected a 
+signal on **Tolling** interface is emitted.
+Such signal  will be captured by every running 
+tolling service, generally **on_domain_enter** 
+callbacks will check the related domain. 
+If the related domain matches with a 
+country-specific  tolling service domain the
+relative callback will **upate_service_Activeness**
+executing a transaction on its FSM's.
+ end note
+Geofence			--> Tolling:tolling_emit_domain_enter(domain);
+Tolling				--> GLib: emit_signal()
+GLib				--> tollingDEService: callback_call()
+note right
+	if (g_strcmp0(arg_domain_id, self->geofencing_domain_name) == 0) {
+		self->is_inside_gnss_domain = TRUE;
+		loginfo("Entered tolling domain");
+		update_service_activeness(self);
+end note
+tollingDEService	--> TollingGnssSm: tolling_gnss_sm_active();
+TollingGnssSm		--> ServiceActivationSm :service_activation_sm_active();
+ServiceActivationSm	--> ServiceActivationSm:service_activation_sm_change_state(active)
+note bottom 
+	odometer_reset(curr_state_data->odometer);
+	get_initial_connection_status(curr_state_data->service);
+	gnss_fix_buffer_start_transmission_timer(curr_state_data->gnss_fix_buffer);
+	curr_state_data->progressive_trip_id = trip_id_generator_get_new_trip_id(curr_state_data->trip_id_generator);
+
+end note
+
+
+
+@enduml 

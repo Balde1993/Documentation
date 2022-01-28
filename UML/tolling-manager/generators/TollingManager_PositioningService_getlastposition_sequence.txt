@@ -1,0 +1,65 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+participant TollingManager
+collections GLib
+collections position
+participant PositioningService
+
+TollingManager --> TollingManager : service_init()
+note left 
+This diagram describe the interaction between
+**TollingManager** service and **PositioningService** by 
+means of GDBus position interface.
+**TollingManager** acts as client module performing
+a subscribe to **position_update** signal. 
+When **positioningService** emits this signal GLib
+call's **position_update_callback**
+transparently to the programmer. 
+Furthermore, TollingManager get and use last
+position data passed to the callback by 
+parameter.
+At last,  **emit_position_update_signal()** will be called 
+by **positioning service** as a result of gnss position update. 
+Positioning servic, while initiliazing, register a callback using 
+**Quectel API QL_LOC_AddRxIndMsgHandler** which call the given callback 
+every time Quectel gnss module get a new position record.  
+end note
+
+TollingManager --> GLib: g_signal_connect(positioning_proxy, "position_update",position_update_callback) 
+GLib 		--> position: transparent
+PositioningService	--> position: emit_position_update_signal()
+position --> GLib: transparent
+GLib --> TollingManager: possrv_position_update_callback()
+TollingManager --> TollingManager: Geofence_verify(geofence, arg_latitude, arg_longitude);
+note left
+implementation: 
+Geofence_check_dsrc(self, latitude, longitude);
+Geofence_verify_polygons(self, latitude, longitude, domain_type_gnss);
+Geofence_verify_polygons(self, latitude, longitude, domain_type_ccc);
+chiedere ravalli
+
+
+**Geofence_verify_polygons** function elaborates lat-lon coordinate 
+in order to manage service's activation/deactivation. 
+To realize this, a signal emission will be performed on **Tolling**
+GDBus interface. 
+
+end note 
+
+
+@enduml

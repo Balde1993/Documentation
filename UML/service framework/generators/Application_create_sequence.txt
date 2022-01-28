@@ -1,0 +1,43 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+participant Application 
+collections GLib 
+participant LifeCycleManager 
+participant Service 
+participant ObuIdMediator
+participant AnomalyManager
+participant UserNotificationManager
+
+
+Application -> GLib: g_main_loop_new()
+GLib --> Application 
+Application -> GLib: get_g_unix_signal_source_new(SIGTERM/SIGINT/SIGUSR1)
+GLib --> Application: instances
+Application -> LifeCycleManager: lifecycle_manager_new()
+LifeCycleManager --> Application
+Application -> Service: service_new()
+Service --> Application
+Application -> Application: service_state_machine_create_and_init
+Application -> ObuIdMediator: obu_id_mediator_new()
+ObuIdMediator --> Application 
+Application -> AnomalyManager: anomaly_manager_create()
+AnomalyManager --> Application
+Application -> UserNotificationManager:user_notification_manager_create()
+UserNotificationManager --> Application
+
+
+@enduml 

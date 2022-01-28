@@ -1,0 +1,96 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+'Service_IFace 
+interface Service_IFace{
+	
+	+Service* service_new()
+	+void service_destroy(Service* self)
+	+void service_destroy(Service* self)
+	+int service_on_hold(Service* self)
+	+int service_resume(Service* self)
+	+int service_init(Service* self, GMainLoop * loop)
+	+int service_deinit(Service* self)
+	
+}
+
+class Service<<tollingDE>>{
+
+	-Tolling_Gnss_Sm_Data  *c_data
+	-TollingGnssSm         *tolling_gnss_sm
+	-GMainLoop        *app_loop
+	-guint    service_activation_domain_id
+	-gboolean is_service_active
+	-gboolean is_service_configured
+	-const gchar *geofencing_domain_name
+	-gboolean     is_inside_gnss_domain
+	-gboolean gps_anomaly
+	-gboolean connection_anomaly
+	-guint    gps_anomaly_timer
+	-guint    connection_anomaly_timer
+	-ConfigurationStore *configuration_store
+	-Odometer           *odometer
+	-GnssFixBuffer      *gnss_fix_buffer
+	-TripIdGenerator    *trip_id_generator
+	-Mqtt_Client        *mqtt_client
+	-EventsManager_listener_t obu_available_listener_id
+	-DbusManager  *dbus_manager
+	
+	'Methods 
+	+void get_initial_service_activation(Service *self)
+	+void get_initial_de_config(Service *self)
+	+void get_initial_axles(Service *self)
+	+void get_initial_weight(Service *self)
+	+void get_initial_tampering(Service *self)
+	+void update_service_activeness(Service *self)
+	
+	-void update_service_activeness(Service* self)
+	-void obu_id_available_callback(Service* self)
+	-void ensure_gnss_fix_buffer_is_initialised(Service *self, const guint16 max_packet)
+	-gboolean        gps_unavailable_for_too_long(gpointer user_data)
+	-gboolean connection_unavailable_for_too_long(gpointer user_data)
+	-void update_anomaly_status(Service *self)
+	-void process_connection_status(Service *self, const gint16 status)
+	-void reset_gps_anomaly_timer(Service *self)
+
+
+}
+
+class Tolling_Gnss_Sm_Data
+class TollingGnssSm
+class ConfigurationStore
+class Odometer
+class GnssFixBuffer
+class TripIdGenerator
+class Mqtt_Client
+class EventsManager_listener_t
+class DbusManager
+
+
+'Relationships 
+
+Service_IFace <-- Service
+Service *-- "0..1"  TollingGnssSm:	c_data
+Service *-- "0..1"  Tolling_Gnss_Sm_Data:	dbus_manager
+Service *-- "0..1"  ConfigurationStore:	configuration_store
+Service *-- "0..1"  Odometer:		odometer
+Service *-- "0..1"  GnssFixBuffer:	gnss_fix_buffer
+Service *-- "0..1"  TripIdGenerator:	trip_id_generator
+Service *-- "0..1"  Mqtt_Client:	mqtt_client
+Service *-- "0..1"  EventsManager_listener_t: obu_available_listener_id
+Service *-  "0..1"  DbusManager:	dbus_manager
+
+
+@enduml

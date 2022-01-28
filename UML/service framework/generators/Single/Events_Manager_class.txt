@@ -1,0 +1,29 @@
+@startuml 
+
+
+
+class EventsManager<<Singleton>>{
+
+	GObject *gobject
+	
+	'Methods 
+	+void events_manager_emit_register(guint operation_result)
+	+EventsManager_listener_t events_manager_listen_register( EventsManager_register_cb_t callback, gpointer client_data)
+	+EventsManager_listener_t events_manager_listen_obu_id_available(EventsManager_obu_id_available_cb_t  callback, gpointer client_data)
+	+void events_manager_destroy(void)
+	+void events_manager_listener_pause(EventsManager_listener_t listener_id)
+	+void events_manager_listener_resume(EventsManager_listener_t listener_id)
+	+void events_manager_listener_remove(EventsManager_listener_t listener_id)
+	-EventsManager *events_manager_new(void)
+	-EventsManager* service_events_manager_instance(void)
+
+}
+
+note left
+This **singleton** module encapsulates a unique istance (**gobject**)
+On such instance will be emitted signals wich will be handled by others  
+end note 
+
+
+
+@enduml 

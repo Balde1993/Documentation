@@ -1,0 +1,53 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+participant TollingDSRC
+collections GLib
+collections position
+participant PositioningService
+
+TollingDSRC --> TollingDSRC : service_init()
+note left 
+This diagram describe the interaction between
+**TollingDSRC** service and **PositioningService** by 
+means of GDBus position interface.
+Tolling DSRC acts as client module performing
+a subscribe to **position_update** signal. 
+When poisitioningService emits this signal GLib
+call's **possrv_position_update_callback**
+transparently to the programmer. 
+Furthermore, TollingDSRC get and use last
+position data passed to the callback by 
+parameter and sets a 30second periodic timer to
+get last position periodically by connecting 
+**periodic_get_position** function to it.  
+At last,  **emit_position_update_signal()** will be called 
+by **positioning service** as a result of gnss position update. 
+Positioning servic, while initiliazing, register a callback using 
+**Quectel API QL_LOC_AddRxIndMsgHandler** which call the given callback 
+every time Quectel gnss module get a new position record.  
+end note
+
+TollingDSRC --> GLib: g_signal_connect(positioning_proxy, "position_update",possrv_position_update_callback) 
+GLib 		--> position: transparent
+PositioningService	--> position: emit_position_update_signal()
+position --> GLib: transparent
+GLib --> TollingDSRC: possrv_position_update_callback()
+TollingDSRC --> TollingDSRC: periodic_get_position
+
+
+@enduml

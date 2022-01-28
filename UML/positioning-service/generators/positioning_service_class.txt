@@ -1,0 +1,99 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+class 	ServiceManagement 
+note bottom: GDBus interface's object
+
+class	GnssClient
+class 	DbusExportedInterface
+
+'Service_IFace 
+interface Service_IFace{
+	
+	+Service* service_new()
+	+void service_destroy(Service* self)
+	+void service_destroy(Service* self)
+	+int service_on_hold(Service* self)
+	+int service_resume(Service* self)
+	+int service_init(Service* self, GMainLoop * loop)
+	+int service_deinit(Service* self)
+	
+}
+
+class DbusExportedInterface{
+
+	+gpointer         dbus_skeleton;
+	+guint            dbus_owning_name;
+	+GDBusConnection* dbus_connection;
+
+}
+
+class Service<<PositioningService>>{
+
+  	-GMainLoop* 			app_loop
+    -GnssClient* 			location_client
+    -ServiceManagement*		service_management
+    -DbusExportedInterface*	dbus_iface
+    -PositionData* 			positions_buffer
+    -int 					position_buffer_size
+    -int 					position_buffer_elements
+    -gboolean 				is_on_hold
+    
+    'Methods
+
+
+}
+
+class GnssClient{
+
+	-Service *service;
+    -ServiceManagement *service_management;
+    -guint location_handle;
+    -guint try_start_navigation_source_id;
+    -DemoMode *demo_mode;
+
+
+}
+
+class PositionData{
+	
+	+guint fix_validity;
+    +guchar fix_type;
+    +gdouble pdop;
+    +gdouble hdop;
+    +gdouble vdop;
+    +gdouble altitude;
+    +gdouble latitude;
+    +gdouble longitude;
+    +GArray *sat_for_fix;
+    +gdouble heading;
+    +gdouble speed;
+    +gchar gps_time[DATE_TIME_LEN];
+    +guint64 date_time;
+
+}
+
+'Relationships 
+
+Service_IFace <-- Service
+Service *-- "0..1" GnssClient: location_client
+Service *-- "0..1" ServiceManagement: service_management
+Service *-- "0..1" DbusExportedInterface: dbus_iface
+Service *-- "0..1" PositionData: positions_buffer
+
+
+@enduml 

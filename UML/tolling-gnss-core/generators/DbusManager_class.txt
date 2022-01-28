@@ -1,0 +1,96 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+class DbusManager{
+
+	'Attributes
+	+Position *position_proxy
+	+guint position_watcher_id
+
+	+Connection *connection_proxy
+	+guint connection_watcher_id
+
+	+Tolling *tolling_proxy
+	+guint tolling_watcher_id
+
+	+IccSensors *icc_sensors_proxy
+	+guint icc_sensors_watcher_id
+
+	+PowerStatusEvents *power_status_events_proxy
+	+guint power_status_events_watcher_id
+
+	+PowerStatus *power_status_proxy
+	+guint power_status_watcher_id
+
+	+void *priv_data	// Country Specific part
+
+	'Methods 
+	+void DbusManager_destroy(DbusManager *self)
+	+void DbusManager_get_position_proxy(DbusManager *self)
+	+void DbusManager_get_connection_proxy(DbusManager *self)
+	+void DbusManager_get_tolling_proxy(DbusManager *self)
+	+void DbusManager_get_icc_sensors_proxy(DbusManager *self)
+	+void DbusManager_get_power_status_events_proxy(DbusManager *self)
+	+void DbusManager_get_power_status_proxy(DbusManager *self)
+
+	+void DbusManager_watch_position_dbus_interface(DbusManager *, GBusNameAppearedCallback , gpointer )
+	+void DbusManager_watch_connection_dbus_interface(DbusManager *, GBusNameAppearedCallback , gpointer )
+	+void DbusManager_watch_tolling_dbus_interface(DbusManager *, GBusNameAppearedCallback , gpointer )
+	+void DbusManager_watch_icc_sensors_dbus_interface(DbusManager *, GBusNameAppearedCallback , gpointer )
+	+void DbusManager_watch_power_status_events_interface(DbusManager *, GBusNameAppearedCallback , gpointer )
+	+void DbusManager_watch_power_status_interface(DbusManager *, GBusNameAppearedCallback , gpointer )
+
+
+	+void DbusManager_destroy_position_proxy(DbusManager *self)
+	+void DbusManager_destroy_connection_proxy(DbusManager *self)
+	+void DbusManager_destroy_tolling_proxy(DbusManager *self)
+	+void DbusManager_destroy_icc_sensors_proxy(DbusManager *self)
+	+void DbusManager_destroy_power_status_events_proxy(DbusManager *self)
+	+void DbusManager_destroy_power_status_proxy(DbusManager *self)
+	
+	+void DbusManager_unwatch_position_dbus_interface(DbusManager *self)
+	+void DbusManager_unwatch_connection_dbus_interface(DbusManager *self)
+	+void DbusManager_unwatch_tolling_dbus_interface(DbusManager *self)
+	+void DbusManager_unwatch_icc_sensors_dbus_interface(DbusManager *self)
+	+void DbusManager_unwatch_power_status_events_interface(DbusManager *self)
+	+void DbusManager_unwatch_power_status_interface(DbusManager *self)
+	
+
+}
+note bottom
+
+This module is used by country-specific tolling components. 
+It is responsible to creates and stores  interface's proxies and to 
+provide methods used to **watch** dbus name. 
+NB: watching a dbus name implies to execute a given callback when a dbus 
+interface has been actually created. 
+(TBC: documentations states: name_appeared_handler will be called when the **name** is known to have a owner )
+
+NB: **priv_data** points to country-specific DBusManager implementation. 
+
+end note
+
+'Relationships
+DbusManager *-up- "0..1" Position: position_proxy
+DbusManager *-left- "0..1" Connection: connection_proxy
+DbusManager *-right- "0..1" Tolling: tolling_proxy
+DbusManager *-right- "0..1" IccSensors: icc_sensors_proxy
+DbusManager *-up- "0..1" PowerStatusEvents: power_status_events_proxy
+DbusManager *-left- "0..1" PowerStatus: power_status_proxy
+
+
+@enduml 

@@ -1,0 +1,84 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+state ALL{
+	
+
+	state tollingGnss {
+		
+		[*]				--> 	running
+		running	--> stop: 		service_deinit
+		running	--> hold:		service_on_hold
+		running	--> running:	any_signal/ inner FSMs forwarding
+		
+		stop	--> running: 	service_resume
+		stop	--> hold: 		service_hold
+		
+		hold	--> stop: 		service_deinit
+		hold	--> running: 	service_resume
+	}
+	
+	state ServiceActivation {
+	
+	
+		[*]				--> 	tolling_not_active
+		
+		tolling_not_active	--> tolling_active: ACTIVE
+		tolling_not_active	--> tolling_no_go: 	NO_GO
+		
+		tolling_active	--> tolling_no_go: 		NO_GO
+		tolling_active	--> tolling_not_active: NOT_ACTIVE
+		
+		tolling_no_go	--> tolling_no_go:  	ACTIVE
+		tolling_no_go	--> tolling_not_active:	NOT_ACTIVE
+	}
+	
+	state ConnectionSM {
+		
+		[*]				--> 	tolling_not_connected
+		
+		tolling_not_connected	-->		tolling_connected: 		CONNECTED
+		tolling_not_connected	-->		tolling_anomaly: 		ANOMALY
+		tolling_connected		-->		tolling_not_connected:	NOT_CONNECTED
+		tolling_connected		-->		tolling_anomaly: 		ANOMALY
+		tolling_anomaly			-->		tolling_connected: 		CONNECTED
+		tolling_anomaly			-->		tolling_not_connected: 	NOT_CONNECTED
+	}
+}
+	note bottom of ALL
+	**HSM Signal legend**:
+	
+		**Tolling_proxy**:
+			- ACTIVE = (on_domain_enter || on_domain_exit || on_service_activation_status_changed) && (is_inside_gnss_domain && is_service_active && is_service_configured)
+			- NO_GO = (on_domain_enter || on_domain_exit || on_service_activation_status_changed)  && is_inside_gnss_domain && ( !is_service_configured || !is_service_active)
+			- NOT_ACTIVE = (on_domain_enter || on_domain_exit || on_service_activation_status_changed)  && !is_inside_gnss_domain
+		
+		**Connection_proxy**:
+			- CONNECTED	  	  = on_connection_status_changed(status==1)
+			- NOT_CONNECTED	  = on_connection_status_changed(status==0)
+			- ANOMALY		  = 20 sec with no response from GPS || 30 sec with no connection
+		
+	Notes: 
+		1)Only **tollingGnss running** state forwards signals above
+		2)Actions performed while transitioning can be found considering 
+		  **enter/exit** actions associated to involved states
+	
+	end note
+
+
+
+@enduml

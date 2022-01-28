@@ -1,0 +1,39 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+'Component provided interface 
+[HmiService]		- HmiButtonEvents	
+[HmiService]		-- HmiAudioPlayerControl
+[HmiService]		-- HmiContextManagement	
+HmiPatternManagement	-- [HmiService]			
+HmiUserNotifications	-- [HmiService]				
+
+
+
+'Relationships
+node "service framework"{
+[HmiProxy]		--> HmiAudioPlayerControl
+[HmiProxy]		--> HmiButtonEvents
+[HmiProxy]		-> HmiContextManagement
+[HmiProxy]		-> HmiPatternManagement
+[HmiProxy]		--> HmiUserNotifications
+
+
+}
+
+
+@enduml 

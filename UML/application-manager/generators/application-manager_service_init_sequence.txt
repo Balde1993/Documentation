@@ -1,0 +1,44 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+participant appmanager 
+participant K1osStartCondition 
+participant LifeCycleManager
+participant K1osMonitor
+participant SwUpdatesManager 
+participant PowerStatusChangesManager
+participant FaultManager
+collections GLib
+
+
+
+appmanager		->	K1osStartCondition: k1os_start_condition_create()
+K1osStartCondition	-->	appmanager: K1osStartCondition
+appmanager		->	K1osStartCondition: wait(K1osStartCondition)	
+K1osStartCondition	-->	appmanager: signal
+appmanager		->	LifeCycleManager: lifecycle_manager_init()
+LifeCycleManager	-->	appmanager
+appmanager		->	K1osMonitor: start()
+appmanager		-> 	appmanager: create_new_SwUpdatesManager()
+appmanager		-> 	appmanager: create_new_PowerStatusChangesManager()
+appmanager		-> 	SwUpdatesManager:set_obu_reboot_mgr(self->obu_reboot_mgr)
+appmanager		-> 	PowerStatusChangesManager:set_sw_updates_manager(self->obu_reboot_mgr)
+appmanager		-> 	PowerStatusChangesManager:set_sw_lfc_manager(self->lfc_manager)
+appmanager		-> 	appmanager: create_new_FaultManager()
+appmanager		-> 	GLib: set_obu_id_polling(frequncy, callback)
+
+@enduml 

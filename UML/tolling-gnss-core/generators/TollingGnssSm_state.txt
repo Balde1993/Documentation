@@ -1,0 +1,45 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				4
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+[*]				--> 	tollingGnss_running
+note left 
+Calling functions like **service_activation_sm_WHATEVER**
+is equals to call **inner states machines** transition. 
+To known more about this see **Tolling_Gnss_Sm_Data_class** 
+diagram. 
+end note 
+tollingGnss_running	--> tolling_gnss_stop: stop
+tollingGnss_running	--> tollingGnss_hold: hold
+tollingGnss_running	--> tollingGnss_running: other/ service_activation_sm_other(curr_state_data->service_activation_sm)
+
+tolling_gnss_stop	--> tollingGnss_running: run
+tolling_gnss_stop	--> tollingGnss_hold: hold
+tolling_gnss_stop	--> tolling_gnss_stop: other/ service_activation_sm_other(curr_state_data->service_activation_sm)
+
+tollingGnss_hold	--> tolling_gnss_stop: stop
+tollingGnss_hold	--> tollingGnss_running: run
+tollingGnss_hold	--> tollingGnss_hold: other/ service_activation_sm_other(curr_state_data->service_activation_sm)
+
+note bottom  
+Every other signal/input will be propagated
+to the inner state machine. 
+TODO: CONTROLLARE STATI HOLD E STOP 
+TODO: ServiceStateSM 
+end note 
+
+
+@enduml

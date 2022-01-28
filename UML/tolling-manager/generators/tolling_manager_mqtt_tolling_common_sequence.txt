@@ -1,0 +1,69 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+participant TollingManager
+participant MqttClient
+collections LibMosquitto 
+participant ModuleToUpdate
+participant JsonMapper	
+collections GLib 
+
+note left of TollingManager
+In this diagram **ModuleToUpdate** can be 
+one of the following: 
+	-TollingGenericConfig
+	-MapManager
+	-VehicleConfig
+	-TollingServiceActivation
+
+Within this perspective **tolling manager** acts 
+as a collector of configuration requests. 
+TollingManager uses MqttClient singleton istance.
+
+Domand per Turati: Chi pubblica in nel tolling common topic?
+Ci pubblica il K1-Proxy su OVER IP?  
+sono riuscito a trovare solo publish sul topic di ack
+
+end note
+
+
+TollingManager	-> MqttClient: mqtt_client_subscribe_topic_from_param( MQTT_TOLLING_COMMON_TOPIC_PAR)
+MqttClient		--> LibMosquitto
+LibMosquitto	--> MqttClient
+MqttClient		--> TollingManager
+TollingManager	->  JsonMapper: json_mapper_get_property_as_string(payload, "configuration-type", &config_type);
+JsonMapper		--> TollingManager: config_type
+LibMosquitto	->  TollingManager: message_callback_common
+TollingManager	->  ModuleToUpdate: manage_module_configuration()
+note left
+In this function new configuration will be 
+persistently stored by writing a file resource.
+Obviously different modules implies different files. 
+Such files are individuated using **service framework
+configuration** module functionalities (get_parameter) 
+while writing is performed exploiting **
+service framework resource_access_mediator*.
+
+end note
+ModuleToUpdate	->  GLib: emit_config_update_signal()
+GLib			-->  ModuleToUpdate
+ModuleToUpdate	--> TollingManager
+TollingManager	--> MqttClient: mqtt_client_publish_message_on_topic_from_param( MQTT_TOLLING_COMMON_ACK_TOPIC_PAR)
+MqttClient		--> LibMosquitto
+LibMosquitto	--> MqttClient
+MqttClient		--> TollingManager
+
+@enduml 

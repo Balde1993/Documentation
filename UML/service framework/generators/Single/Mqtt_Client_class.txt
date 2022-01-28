@@ -1,0 +1,103 @@
+@startuml
+'	enum mqtt_states mqtt_client_init(Mqtt_Client *self, const char *user, const char *pwd, const char *host, const int port, void* service) 
+'	enum mqtt_states mqtt_client_init_with_common_param(Mqtt_Client *self, void* service) 
+
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+class Mqtt_Client{
+
+	'Attributes 
+	-gboolean singleton_exists
+    -gboolean already_initialised
+    -struct mosquitto *mosq
+    -void* service 
+    -char* host 
+    -int port 
+    -gboolean library_currently_connected
+    -gboolean client_to_stay_connected 
+    -gboolean pending_connection_request 
+    -gboolean pending_disconnection_request 
+    -GHashTable *topic_data_map 
+    -mqtt_client_publish_started_callback_t publish_started_callback 
+    -mqtt_client_publish_ended_callback_t publish_ended_callback 
+    -gint64 mqtt_pingreq_time 
+    -GThread *loop_thread 
+    -gboolean stop_loop_thread 
+
+
+	'Methods 
+	+Mqtt_Client *mqtt_client_new() 
+	+void mqtt_client_destroy(Mqtt_Client *)
+	+void mqtt_client_deinit(Mqtt_Client *)
+	+int mqtt_client_start(Mqtt_Client *)
+	+int mqtt_client_stop(Mqtt_Client *)
+	+void mqtt_client_subscribe_topic(Mqtt_Client *self, const char* , const enum qos_levels, void (*)(void *obj, const char *))
+	+void mqtt_client_subscribe_topic_from_param(Mqtt_Client *, const char* , const enum qos_levels , void (*)(void *, const char *))
+	+void mqtt_client_unsubscribe_topic(Mqtt_Client *, const char* )
+	+void mqtt_client_unsubscribe_topic_from_param(Mqtt_Client *, const char* )
+	+guint mqtt_client_publish_message_on_topic_from_param(Mqtt_Client *, const char* , const char* )
+	+guint mqtt_client_publish_message_on_topic_from_param_with_len(Mqtt_Client *, const char* , const gsize , const char* )
+	+guint mqtt_client_publish_message_on_topic_string(Mqtt_Client *, const char* , const char* )
+	+guint mqtt_client_publish_message_on_topic_string_with_len(Mqtt_Client *, const char* , const gsize , const char* )
+	+void mqtt_client_get_payload(const gchar *, GString** )
+	+void mqtt_client_get_payload_and_timestamp(const gchar *, GString** , GDateTime** )
+	+void mqtt_client_register_publish_started_callback(Mqtt_Client *, mqtt_client_publish_started_callback_t )
+	+void mqtt_client_register_publish_ended_callback(Mqtt_Client *, mqtt_client_publish_ended_callback_t )
+
+}
+
+
+class HttpsClient{
+
+	+HttpsClientPriv *priv;
+
+    +void (*ctor)(HttpsClient  *self)
+    +void (*dtor)(HttpsClient  *self)
+    
+    +CURLcode (*get)(HttpsClient*,const char*, struct curl_slist *,glong, https_client_write_callback_t, gpointer, glong *)
+    +CURLcode (*post)(HttpsClient *,const char*, struct curl_slist*, glong, struct curl_httppost*,glong ,https_client_read_callback_t, gpointer, https_client_write_callback_t , gpointer , glong*)                  
+    
+    'Methods 
+    +HttpsClient *HttpsClient_new()
+}
+note left: Function pointers will be assigned by HttpsClient_new function
+
+
+
+class HttpsClientPriv{
+
+    -gchar        **hosts_allowed
+    -gint           hosts_allowed_count
+    -gchar        **hosts_users
+    -gchar        **hosts_pwds
+    -gboolean       https_verbose
+
+    CURLcode (*check_url)(HttpsClient  *self, const char   *url)
+    void (*set_common_options)(HttpsClient  *self, CURL **curl_ref)
+    void (*set_credentials)(HttpsClient  *self, const char *url, CURL **curl_ref)
+
+}
+
+
+'Relationships 
+HttpsClient *-- "0..1" HttpsClientPriv: priv
+
+
+
+
+
+
+@enduml 

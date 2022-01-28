@@ -1,0 +1,77 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+class StateMachine{
+	
+	+StateMachinePriv *priv
+
+	'Methods
+	+void (*ctor)(StateMachine *self, gpointer context // owned by caller, not deallocated)
+	+gpointer (*context)(StateMachine *self)
+	+sm_status_t (*new_status)(StateMachine *self, sm_action_cb enter_cb, sm_action_cb exit_cb, sm_action_cb do_cb)
+	+void (*new_transition)( StateMachine*self, sm_status_t from_status, sm_status_t to_status, sm_event_mask_t triggers, sm_guard_cb guard_cb, sm_effect_cb effect_cb)
+	+void (*set_initial_status)(StateMachine *self,	sm_status_t status)
+	+sm_status_t (*status)(	StateMachine *self)
+	+gboolean (*next)(StateMachine *self, sm_event_mask_t event_mask)
+	+void (*dtor)(StateMachine *self)
+
+
+
+}
+
+class StateMachinePriv {
+	
+	+gpointer  context
+	+SmStatus *status
+	+SmStatus *states[SM_MAX_STATES+1]
+}
+
+class SmStatus {
+	
+	+StateMachine *state_machine
+
+	+sm_action_cb  enter_cb
+	+sm_action_cb  exit_cb
+	+sm_action_cb  do_cb
+	+SmTransition *transitions[SM_MAX_STATE_TRANSTIONS+1]
+	+void (*ctor)(SmStatus      *self, StateMachine  *state_machine, sm_action_cb   enter_cb, sm_action_cb   exit_cb, sm_action_cb   do_cb)
+	+void (*dtor)(SmStatus*self)
+}
+
+
+class SmTransition {
+	+SmStatus        *from_status
+	+SmStatus        *to_status
+	+sm_event_mask_t  triggers
+	+sm_guard_cb      guard_cb
+	+sm_effect_cb     effect_cb
+	+void (*ctor)(SmTransition *self, SmStatus *from_status, SmStatus *to_status,sm_event_mask_t  triggers,sm_guard_cb guard_cb,sm_effect_cb effect_cb)
+	+void (*dtor)(SmTransition *self)
+}
+
+
+'Relationships 
+
+StateMachine *-- "0..1" StateMachinePriv: priv
+StateMachinePriv *-- "0..1" SmStatus: status
+StateMachinePriv *-- "0..1" SmStatus: states[SM_MAX_STATES+1]
+SmStatus *-- "0..1" StateMachine: state_machine
+SmStatus *-- "0..1" SmTransition: transitions[SM_MAX_STATE_TRANSTIONS+1]
+SmTransition *-- "0..1" SmStatus: from_status
+SmTransition *-- "0..1" SmStatus: to_status
+
+@enduml 

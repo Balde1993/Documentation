@@ -1,0 +1,50 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+participant 	ObuIdManager<<Obu-manager>>
+collections	GLib 
+participant ObuIdMediator
+participant ObuIdManagement
+participant EventsManager 
+
+ObuIdManager	-->ObuIdManager :ObuIdManager_poll_obu_id_from_dsrc()
+note left 
+Polls every second **DSRC** in order to build 
+**OBU_ID** (DSRC combined with OBU Manufacturer data) 
+end note
+ObuIdManager	-->ObuIdManager :ObuIdManager_store_persistent_obu_id()
+ObuIdManager	-->GLib : ObuIdManager_make_obu_id_available_to_clients()
+note left
+This function will call **g_bus_own_name**.
+Owning bus name will cause callback call 
+
+end note
+GLib			--> ObuIdManager: callback_call(ObuIdManager_emit_obu_id_available)
+ObuIdManager	--> ObuIdManagement: obu_id_management_emit_obu_id_available
+GLib			--> ObuIdMediator: callback_call(on_name_appeared_cbk)
+ObuIdMediator   --> ObuIdManagement:obu_id_management_call_get_obu_id_sync
+ObuIdManagement   --> ObuIdMediator
+ObuIdMediator	--> ObuIdMediator:obu_id_mediator_set_obu_id
+ObuIdMediator	--> EventsManager: events_manager_emit_obu_id_available();
+EventsManager	--> GLib:  g_signal_emit_by_name(OBU_ID_AVAILABLE_EVENT_NAME)
+note right
+This signal is emitted to inform any subscribed module that **OBU_ID** is available
+end note
+
+
+
+
+@enduml 

@@ -1,0 +1,201 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+'Service_IFace 
+interface Service_IFace{
+	
+	+Service* service_new()
+	+void service_destroy(Service* self)
+	+void service_destroy(Service* self)
+	+int service_on_hold(Service* self)
+	+int service_resume(Service* self)
+	+int service_init(Service* self, GMainLoop * loop)
+	+int service_deinit(Service* self)
+	
+}
+
+class 	Tolling 
+note bottom: GDBus interface's skeleton 
+
+class Position
+note top: GDBus interface's proxy 
+ 
+class Service<<TollingManager>>{
+	
+	State**          states
+	ConnectionData*  c_data
+
+	GMainLoop*       app_loop
+
+	Tolling*         skeleton
+	guint            owning_name
+	GDBusConnection* dbus_connection
+	Position*        positioning_proxy
+	Mqtt_Client*     mqtt_client
+
+	VehicleConfig* vehicle_config
+	TollingServiceActivation* tolling_services
+	Geofence *geofence
+	MapManager *map_manager
+	TollingConfiguration* tolling_config
+	JsonMapper *dsrc_config
+	time_t	last_dsrc_config_ts
+	TollingGenericConfig* tolling_generic_config
+
+	EventsManager_listener_t register_listener_id
+	EventsManager_listener_t obu_available_listener_id
+
+}
+
+class TollingServiceActivation{
+
+	gboolean    is_empty
+	JsonMapper* saved_config
+
+}
+
+class TollingConfiguration{
+	-HmiProxy*      hmi_proxy
+	-Dsrc*          dsrc_proxy
+	-AxlesConfigPage*     axles_page
+	-WeightConfigPage*    weight_page
+	
+	+TollingConfiguration* tolling_configuration_create_and_init(VehicleConfig* )
+	+void tolling_configuration_init_skeleton(TollingConfiguration* , Tolling* )
+	+void tolling_configuration_init_hmi(TollingConfiguration* )
+	+void on_hmi_name_appeared(GDBusConnection *connection, const gchar *, const gchar *, gpointer )	
+	+void tolling_configuration_destroy(TollingConfiguration* )	
+	+AxlesConfigPage* tolling_configuration_get_axles_page(TollingConfiguration* )
+	+WeightConfigPage* tolling_configuration_get_weight_page(TollingConfiguration* )
+
+}
+
+class Dsrc{}
+note bottom: GDBus interface's proxy 
+
+class WeightConfigPage{
+	+TollingConfigurationPage super
+    +void (*ctor)(WeightConfigPage *self,Dsrc *, VehicleConfig* , const gchar *)
+    +void (*dtor)(WeightConfigPage    *)
+
+}
+
+class AxlesConfigPage{
+	+TollingConfigurationPage super
+    +void (*ctor)(AxlesConfigPage *self,Dsrc *, VehicleConfig* , const gchar *)
+    +void (*dtor)(AxlesConfigPage    *)
+
+}
+
+class Geofence{
+    -Tolling* skeleton
+    -MapManager *map_manager
+	-GArray *gnss_alarmed_polygons_keys
+	-GArray *ccc_alarmed_polygons_keys
+	-guint current_dsrc_area
+	-GMutex lock
+	
+	'Methods 	
+	+Geofence *Geofence_new(MapManager *, Tolling* )	
+	+void Geofence_destroy(Geofence* )	
+	+void Geofence_verify(Geofence *, gdouble , gdouble )	
+	+enum return_value Geofence_get_current_ccc_domains(Geofence* , GVariant** )	
+	+enum return_value Geofence_get_current_gnss_domains(Geofence* , gchar *** )	
+	+enum return_value Geofence_get_current_dsrc_area(Geofence* , guint* )
+	
+	-static void Geofence_check_dsrc(Geofence *, gdouble , gdouble )
+	-static void Geofence_emit_polygon_alarm(Geofence *, guint , gboolean , DomainType )
+	-static void Geofence_verify_polygons(Geofence *, gdouble , gdouble , DomainType ) 
+
+}
+
+class ConnectionData{
+	ConnStateId state_id
+    Connection* networkmgr_proxy
+    Mqtt_Client* mqtt_client
+
+    void (*change_state)(Service*, ConnStateId) //state change callback
+    Service* service //opaque type: don't use directly
+
+    guint event_source_id
+    
+    'Methods 
+    +State* conn_on_hold_new(ConnectionData* data)
+	+State* conn_unknown_new(ConnectionData* data)	
+	+State* conn_up_new(ConnectionData* data)	
+	+State* conn_down_new(ConnectionData* data)
+}
+
+
+class Connection{
+
+}
+note bottom: GDBus interface's proxy 
+
+
+class 	VehicleConfig{
+	gboolean    is_empty
+	JsonMapper* saved_config
+
+}
+
+class MapManager{
+	-pthread_mutex_t lock
+	-GHashTable* polygons_to_iterate
+	-GHashTableIter polygon_iterator
+	-GHashTable* dsrc_areas
+	-GHashTable* gnss_polygons
+	-GHashTable* ccc_polygons
+    -GHashTable* gnss_domain_id_by_name
+    -GHashTable* gnss_domain_name_by_id
+    
+    +MapManager* MapManager_new(void)
+	+void MapManager_destroy(MapManager* self)
+	+enum return_value MapManager_update_dsrc(MapManager* , Tolling* , json_object *, gchar** )
+	+enum return_value MapManager_update_gnss(MapManager* , const gchar *, json_object *)
+	+enum return_value MapManager_get_dsrc_areas(MapManager* , GArray** )
+	+enum return_value MapManager_get_dsrc_areas_variant(MapManager* , GVariant** )
+	+enum return_value MapManager_polygon_iteration_start(MapManager *, DomainType )
+	+gboolean MapManager_polygon_iteration_next(MapManager *, Polygon **)
+	+Polygon *MapManager_get_polygon(MapManager *, DomainType , guint )
+	+const gchar *MapManager_gnss_domain_name_by_id(MapManager *, guint )
+	+void MapManager_lock(MapManager* )
+	+void MapManager_unlock(MapManager* )
+
+
+}
+
+
+
+'Relationships 
+Service_IFace 			<-- Service
+Service  				*-- Tolling: skeleton
+Service  				*-- ConnectionData: c_data
+Service 				*-up- Position: positioning_proxy
+Service  				*-up- VehicleConfig: vehicle_config
+Service  				*-up- TollingServiceActivation: tolling_services
+Service  				*- Geofence: geofence
+Service  				*-up- MapManager: map_manager
+Service  				*-left- TollingConfiguration: tolling_config
+Service  				*-up- TollingGenericConfig
+ConnectionData 			*-- Connection: networkmgr_proxy
+Geofence 				*-- Tolling: skeleton
+Geofence 				*-- MapManager: map_manager
+TollingConfiguration	*-left- Dsrc: dsrc_proxy
+TollingConfiguration 	*-up- AxlesConfigPage: axles_page
+TollingConfiguration 	*-down- WeightConfigPage: weight_page
+
+@enduml 

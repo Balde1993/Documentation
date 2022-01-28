@@ -1,0 +1,38 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+participant PositioningService 
+participant Position 
+collections GLib 
+participant gnss_client
+
+
+PositioningService -> Position: get_position_skeleton_new();
+Position	   --> PositioningService: skeleton 
+PositioningService -> GLib : g_bus_own_name(positioning_service_bus_name)
+GLib		   -> PositioningService: on_bus_acquired_callback_call()
+PositioningService -> gnss_client: start_navigation()
+gnss_client	   -> GLib: g_timeout_add_seconds(2, try_start_navigation, self)
+note right
+Setting a 2 seconds periodic function call 
+**gnss_client's** function **try_start_navigation**
+calls QL_LOC_Start_navigation **Quectel API** function
+which is used to starts and obtains navigation data 
+end note
+GLib	   --> gnss_client
+gnss_client --> PositioningService
+@enduml 

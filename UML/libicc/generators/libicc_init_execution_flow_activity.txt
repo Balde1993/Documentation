@@ -1,0 +1,44 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+start
+
+:internal resources init;
+
+:serial port open;
+
+:serial port config; 
+
+floating note left
+recv_routine, UBI_crash_func and keepalive_func 
+executed in three dedicated pthread
+end note
+
+fork 
+	repeat: recv_routine;
+	repeat while(stop application?) is (no)
+fork again
+	repeat: UBI_crash_func;
+	repeat while(stop application?) is (no)
+fork again
+	repeat: keepalive_func;
+	repeat while(stop application?) is (no)
+fork again 
+	:serial_handshake;
+
+end fork
+
+@enduml 

@@ -1,0 +1,52 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+	
+participant Application 
+participant Service 
+participant EventsManager 
+collections GLib
+participant ObuIdMediator 
+participant LifeCycleManager
+
+
+Application 	-> 	Service: service_init()
+Service   	--> 	Application
+Application 	-> 	EventsManager: events_manager_listen_obu_id_available(obu_id_available_cbk)
+note top 
+If **service framework** is compiled for x86
+this call is replaced by a mocked implementation 
+**obu-id** is not communicated by **obu-manager**
+but is simply set here along with storing and 
+signalling activities exploiting **EventsManager**
+functionalities.
+ end note
+EventsManager   -> 	GLib: g_signal_connect()
+GLib		-> 	EventsManager
+EventsManager 	--> 	Application: listener_id
+Application 	-> 	ObuIdMediator: obu_id_mediator_start_watching_dbus_name_status(app_obu_id_mediator)
+ObuIdMediator 	-->	Application
+Application 	->	LifeCycleManager: lifecycle_manager_register()
+note right
+This function performs: 
+	1) Internal application registration 
+	2) Triggers periodic function that emits heartbeat signal 
+	3) Emits LifeCycle Interface's signal communicating
+	   registration result
+end note
+LifeCycleManager 	-->	Application
+
+
+@enduml 

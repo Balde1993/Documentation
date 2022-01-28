@@ -1,0 +1,41 @@
+@startuml 
+
+'Groups 
+folder Managers{
+	[ObuManager]	
+	[ApplicationManager]
+	[PowerManager]
+	[HmiManager]
+	[TollingManager]
+	[VasManager]
+}
+
+'Groups 
+folder Services{
+	[network-manager]	
+	[positioning-service]
+	[icc-service]
+	[dsrc-service]
+	[telemetry-service]
+}
+
+'Groups 
+folder 3D_PARTY{
+	[libicc]	
+	[libsoundsupport]
+	[low_power_app]
+	[libfvad]
+}
+
+folder Applications{
+	[next-application ]	
+	[tolling-dsrc]
+	[tolling-de]
+	[tolling-pl]
+	[ubi-blackbox ]
+
+}
+
+
+
+@enduml 

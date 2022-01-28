@@ -1,0 +1,8 @@
+@startuml
+
+Main -> Application: application_create()
+Application -> Main 
+Application -> LifeCycleManager: lifecycle_manager_new()
+
+
+@enduml 

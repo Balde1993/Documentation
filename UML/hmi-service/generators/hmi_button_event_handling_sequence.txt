@@ -1,0 +1,52 @@
+@startuml
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+actor user
+participant KeyPad
+collections libicc
+participant IccServiceHmiModule<<IccService>> 
+participant icchmi 
+participant GDBus
+particIpant HmiKeypadEventMediator 
+
+'Seqences 
+
+user 			-> 	KeyPad			: press/release
+libicc			->	KeyPad			: serial_read
+KeyPad			-->	libicc			: msg_raw
+libicc			-->	IccServiceHmiModule	: button_pressed_cb
+IccServiceHmiModule	-> 	icchmi			: icc_hmi_emit_button_event
+icchmi 		-->	GDBus			: emit_signal
+GDBus 			--> 	HmiKeypadEventMediator	: callback_call 
+HmiKeypadEventMediator	--> 	HmiKeypadEventMediator	: handle_icc_btn_event
+note right
+Button event handling has been implement relying on StateMachines implementation 
+Here basics steps are: 
+	-1 Check if the event is a button pressing or button releasing 
+	-2 Get event time instant 
+	-3 Call (if exist) the transition for the right stateMachine 
+	   (one for each button of the system) considering current 
+	   status and button event 
+
+Here we can notice how basics button event such pressing and releasing are used 
+to define more complex events like dobulepressing, longpressing etc. 
+HmiKeypadEventMediator just recognize basic events, buttonStateMachines 
+are feeded with such events in order to recognize complex events executing 
+corrects actions while transitioning from a status to another. 
+end note
+
+@enduml 

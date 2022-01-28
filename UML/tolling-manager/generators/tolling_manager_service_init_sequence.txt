@@ -1,0 +1,44 @@
+@startuml 
+
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				3
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+participant tollingManager
+collections GLib 
+participant Position 
+participant Tolling
+
+note left of tollingManager
+
+**g_bus_own_name** callback links **GDbus tolling interface skeleton's methods** 
+to iternal methods implemented within the **tollingManager**
+link
+
+end note
+
+tollingManager  --> GLib : g_bus_own_name(Tolling)
+GLib 		--> tollingManager: name
+tollingManager --> Position: get_proxy()
+Position	--> tollingManager: proxy
+tollingManager --> GLib: 	g_signal_connect(positioning_proxy, "position_update",position_update_callback)
+GLib 		--> tollingManager
+tollingManager --> EventsManager: events_manager_listen_obu_id_available()
+EventsManager --> tollingManager
+tollingManager --> tollingManager: create_and_init_members()
+tollingManager --> EventsManager: events_manager_listen_register()
+EventsManager --> tollingManager
+tollingManager --> EventsManager: tolling_configuration_create_and_init()
+
+@enduml
