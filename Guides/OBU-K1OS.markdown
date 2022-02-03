@@ -54,7 +54,7 @@ In order to update Nordic's user has to follow these steps:
   
 Figure x: Nordic bootlader           |  Figure x: Nordic SW
 :-------------------------:|:-------------------------:
-![](https://github.com/Balde1993/K1OS-Documentation/blob/master/OBU_K1OS_pictures/CHECK__nordic_KM.png) | ![](https://github.com/Balde1993/K1OS-Documentation/blob/master/OBU_K1OS_pictures/CHECK__nordic_2_KM.png)
+![](https://github.com/Balde1993/Documentation/blob/master/Guides/OBU_K1OS_pictures/CHECK__nordic_KM.png) | ![](https://github.com/Balde1993/Documentation/blob/master/Guides/OBU_K1OS_pictures/CHECK__nordic_2_KM.png)
 
 
 
