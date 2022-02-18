@@ -1,0 +1,47 @@
+@startuml 
+skinparam classFontSize 				32
+skinparam classAttributeFontSize 		26
+skinparam classBackgroundColor  		DeepSkyBlue
+skinparam classBorderColor				blue
+skinparam captionFontSize		 		26
+skinparam captionBackgroundColor		green
+skinparam defaultFontSize				26
+skinparam arrowThickness				5
+skinparam arrowColor					black
+skinparam stateBackgroundColor			DeepSkyBlue
+skinparam participantBackgroundColor	DeepSkyBlue
+skinparam LifeLineBorderColor			black
+skinparam LifeLineBackgroundColor		black
+skinparam collectionsBackgroundColor	green
+
+
+participant tollingDSRC
+participant Worker_Switch_Square
+
+
+tollingDSRC	-> Worker_Switch_Square: instantiate_thread
+note left
+This is triggered by Tolling-Manager 
+emitting dsrc_area_enter signal. 
+Tolling-DSRC's callback is executed 
+automatically.
+end note
+
+Worker_Switch_Square	->  dsrc_service: dsrc_call_dsrc_get_eid_and_active_from_dsrc_sync()
+dsrc_service 		-> DSRC: 0x03(GET) 0x00(EDI_SYSTEM) 0x01(1 attribute) 0x7F(DSRC_ATTR_ID)
+DSRC			-->  dsrc_service: get_response
+dsrc_service		-->  Worker_Switch_Square: active_services 
+Worker_Switch_Square	->  dsrc_service: dsrc_call_dsrc_set_active_unactive_sync()
+dsrc_service 		-> DSRC: 0x04(SET) 0x00(EDI_SYSTEM) 0x01(1 attribute) 0x7F(DSRC_ATTR_ID)
+DSRC			-->  dsrc_service
+dsrc_service		-->  Worker_Switch_Square
+Worker_Switch_Square	--> dsrc_service:dsrc_call_dsrc_reboot_sync
+dsrc_service 		-> DSRC:
+DSRC			-->  dsrc_service
+dsrc_service		-->  Worker_Switch_Square
+
+@enduml 
+
+
+#Nota-> finire con gli ESA degli altri accessi al DSRC + DOcumentare la logica del thread + provare il tutto su scheda e cercare tutti i passaggi riportati
+#NOTA -> stessa cosa poi per le altre cbk 
